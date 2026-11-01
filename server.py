@@ -103,10 +103,10 @@ def ml_lab(b):
     baseline=max(sum(y for _,y in test),sum(1-y for _,y in test))/len(test)
     return {'method':'9 voisins proches (k-NN), deux variables; test chronologique hors entraînement','trainSize':len(train),'testSize':len(test),'accuracyPct':round(correct/len(test)*100,1),'baselinePct':round(baseline*100,1),'lastTestProbabilityPct':round(forecasts[-1][0]*100,1),'warning':"Performance historique seulement ; ce n’est pas une prévision vérifiée du prochain cours. Échantillon réduit."}
 class Handler(BaseHTTPRequestHandler):
-    def headers(self,code,kind='application/json; charset=utf-8'):
+    def write_headers(self,code,kind='application/json; charset=utf-8'):
         self.send_response(code);self.send_header('Content-Type',kind);self.send_header('Cache-Control','no-store');self.send_header('X-Content-Type-Options','nosniff');self.send_header('X-Frame-Options','DENY');self.send_header('Referrer-Policy','no-referrer');self.end_headers()
     def sendjson(self,code,data):
-        content=json.dumps(data,ensure_ascii=False,allow_nan=False).encode();self.headers(code);self.wfile.write(content)
+        content=json.dumps(data,ensure_ascii=False,allow_nan=False).encode();self.write_headers(code);self.wfile.write(content)
     def do_GET(self):
         u=urlparse(self.path)
         try:
@@ -119,7 +119,7 @@ class Handler(BaseHTTPRequestHandler):
                 q=parse_qs(u.query);a=q.get('asset',['BTC'])[0].upper();d,at=fetch('Ticker',a);x=next(iter(d.values()))
                 return self.sendjson(200,{'asset':a,'last':float(x['c'][0]),'bid':float(x['b'][0]),'ask':float(x['a'][0]),'quotedAt':int(at*1000),'source':'Kraken (indicatif)'})
             if u.path in ('/','/index.html'):
-                self.headers(200,'text/html; charset=utf-8');return self.wfile.write((BASE/'index.html').read_bytes())
+                self.write_headers(200,'text/html; charset=utf-8');return self.wfile.write((BASE/'index.html').read_bytes())
             return self.sendjson(404,{'error':'Page introuvable'})
         except (ValueError,TypeError,KeyError,OverflowError) as e:self.sendjson(400,{'error':str(e)})
         except MarketError as e:self.sendjson(503,{'error':str(e)})
