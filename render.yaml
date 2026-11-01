@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: allia-trade-demo
+    runtime: python
+    plan: free
+    region: frankfurt
+    buildCommand: python bootstrap.py
+    startCommand: python server.py
+    healthCheckPath: /health
+    envVars:
+      - key: PYTHONUNBUFFERED
+        value: '1'
